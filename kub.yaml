@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: any-app-deployment
+  labels:
+    app: my-app
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: zone-1
+      containers:
+      - name: my-app
+        image: my-app-image
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "2"
+          limits:
+            memory: "128Mi"
+            cpu: "0.1"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+      tolerations:
+      - key: "23462978562937"
+        operator: "Exists"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topoly.kubernetes.io/zone
+                operator: In
+                values:
+                - zone-1
+                - zone-2
+                - zone-3
